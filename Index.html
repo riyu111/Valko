@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Wolf Traveler 🐺</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: linear-gradient(180deg, #0f1729 0%, #1a2744 40%, #2d4a3e 100%); color: #f5f0e8; min-height: 100vh; overflow-x: hidden; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.gold-text { background: linear-gradient(135deg, #e2b44a, #f0d68a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const e = React.createElement;
+const { useState, useEffect, useCallback } = React;
+
+const COUNTRIES = [
+  { name: "Canada", flag: "\u{1F1E8}\u{1F1E6}", food: "Poutine", landmark: "CN Tower", postcard: "Had amazing poutine! The maple syrup here is incredible. \u{1F341}" },
+  { name: "USA", flag: "\u{1F1FA}\u{1F1F8}", food: "Cheesesteak", landmark: "Statue of Liberty", postcard: "Tried a Philly cheesesteak! Americans are so friendly. \u{1F5FD}" },
+  { name: "Japan", flag: "\u{1F1EF}\u{1F1F5}", food: "Ramen", landmark: "Mt. Fuji", postcard: "The cherry blossoms are beautiful! Had real sushi (no avocado!). \u{1F338}" },
+  { name: "Korea", flag: "\u{1F1F0}\u{1F1F7}", food: "Kimchi", landmark: "Gyeongbokgung", postcard: "The street food is amazing! Tried tteokbokki! \u{1F336}" },
+  { name: "UK", flag: "\u{1F1EC}\u{1F1E7}", food: "Fish & Chips", landmark: "Big Ben", postcard: "Having tea and crumpets. No AC anywhere though! \u2615" },
+  { name: "France", flag: "\u{1F1EB}\u{1F1F7}", food: "Croissant", landmark: "Eiffel Tower", postcard: "The pastries here are heavenly! Bonjour! \u{1F950}" },
+  { name: "Germany", flag: "\u{1F1E9}\u{1F1EA}", food: "Pretzel", landmark: "Brandenburg Gate", postcard: "The pretzels are huge! Beer gardens are so cozy. \u{1F968}" },
+  { name: "Brazil", flag: "\u{1F1E7}\u{1F1F7}", food: "A\u00e7a\u00ed Bowl", landmark: "Christ the Redeemer", postcard: "Dancing samba on the beach! The energy here is electric! \u{1F483}" },
+  { name: "Mexico", flag: "\u{1F1F2}\u{1F1FD}", food: "Tacos", landmark: "Chichen Itza", postcard: "Real tacos are nothing like Taco Bell! So good! \u{1F32E}" },
+  { name: "Argentina", flag: "\u{1F1E6}\u{1F1F7}", food: "Empanada", landmark: "Obelisco", postcard: "The steak here is unbelievable! Watching tango tonight. \u{1F969}" },
+  { name: "Russia", flag: "\u{1F1F7}\u{1F1FA}", food: "Borscht", landmark: "Red Square", postcard: "It's freezing but the borscht warms my soul! Met a Karelian girl! \u2744" },
+  { name: "Finland", flag: "\u{1F1EB}\u{1F1EE}", food: "Karelian Pie", landmark: "Northern Lights", postcard: "Saw the Northern Lights! Worth the -30\u00b0C! \u{1F30C}" },
+  { name: "Australia", flag: "\u{1F1E6}\u{1F1FA}", food: "Vegemite Toast", landmark: "Sydney Opera House", postcard: "G'day mate! Tried Vegemite... interesting. \u{1F998}" },
+  { name: "Italy", flag: "\u{1F1EE}\u{1F1F9}", food: "Pizza Margherita", landmark: "Colosseum", postcard: "Real Italian pizza has changed my life forever! \u{1F355}" },
+  { name: "Spain", flag: "\u{1F1EA}\u{1F1F8}", food: "Paella", landmark: "Sagrada Familia", postcard: "Siesta culture is amazing. Why doesn't everyone do this? \u{1F31E}" },
+  { name: "Thailand", flag: "\u{1F1F9}\u{1F1ED}", food: "Pad Thai", landmark: "Grand Palace", postcard: "The temples are breathtaking! Street food is incredible! \u{1F6D5}" },
+  { name: "Philippines", flag: "\u{1F1F5}\u{1F1ED}", food: "Adobo", landmark: "Chocolate Hills", postcard: "The beaches are paradise! People are so welcoming! \u{1F3DD}" },
+  { name: "Turkey", flag: "\u{1F1F9}\u{1F1F7}", food: "Kebab", landmark: "Hagia Sophia", postcard: "Turkish coffee is so strong! The bazaars are magical! \u2615" },
+  { name: "India", flag: "\u{1F1EE}\u{1F1F3}", food: "Butter Chicken", landmark: "Taj Mahal", postcard: "The colors everywhere are incredible! Spicy food challenge: survived! \u{1F336}" },
+  { name: "Singapore", flag: "\u{1F1F8}\u{1F1EC}", food: "Laksa", landmark: "Marina Bay Sands", postcard: "This tiny place is so clean and futuristic! Infold's neighbors! \u{1F3D9}" },
+  { name: "Malaysia", flag: "\u{1F1F2}\u{1F1FE}", food: "Nasi Lemak", landmark: "Petronas Towers", postcard: "Saw my face on an LED billboard here! Fans are amazing! \u{1F43A}" },
+  { name: "Taiwan Region", flag: "\u{1F9CB}", food: "Bubble Tea", landmark: "Taipei 101", postcard: "Night markets are incredible! Bubble tea on every corner! \u{1F9CB}" },
+  { name: "Chile", flag: "\u{1F1E8}\u{1F1F1}", food: "Pastel de Choclo", landmark: "Atacama Desert", postcard: "The stars in the Atacama are breathtaking! \u{1F31F}" },
+  { name: "Guatemala", flag: "\u{1F1EC}\u{1F1F9}", food: "Pepi\u00e1n", landmark: "Tikal", postcard: "Ancient Mayan ruins in the jungle! Felt like an adventure! \u{1F3DB}" },
+  { name: "Panama", flag: "\u{1F1F5}\u{1F1E6}", food: "Sancocho", landmark: "Panama Canal", postcard: "Watched ships go through the canal! Engineering marvel! \u{1F6A2}" },
+  { name: "Puerto Rico", flag: "\u{1F1F5}\u{1F1F7}", food: "Mofongo", landmark: "El Morro", postcard: "The beaches and the music! Met a hunter who bakes cookies! \u{1F3D6}" },
+  { name: "Ukraine", flag: "\u{1F1FA}\u{1F1E6}", food: "Varenyky", landmark: "St. Sophia's", postcard: "The resilience of people here is inspiring. Sunflowers everywhere! \u{1F33B}" },
+  { name: "Poland", flag: "\u{1F1F5}\u{1F1F1}", food: "Pierogi", landmark: "Wawel Castle", postcard: "Pierogi are basically the perfect food! Can't stop eating! \u{1F95F}" },
+  { name: "Indonesia", flag: "\u{1F1EE}\u{1F1E9}", food: "Nasi Goreng", landmark: "Borobudur", postcard: "Bali is magical! The temples are surrounded by monkeys! \u{1F412}" },
+  { name: "Vietnam", flag: "\u{1F1FB}\u{1F1F3}", food: "Ph\u1edf", landmark: "Ha Long Bay", postcard: "Morning ph\u1edf by the bay. This might be the best soup ever! \u{1F35C}" },
+  { name: "New Zealand", flag: "\u{1F1F3}\u{1F1FF}", food: "Pavlova", landmark: "Milford Sound", postcard: "Saw a real kiwi bird! The mountains look like Middle-earth! \u{1F95D}" },
+  { name: "China", flag: "\u{1F1E8}\u{1F1F3}", food: "Dongpo Pork", landmark: "Great Wall", postcard: "Walked the Great Wall! The food here is incredible and the fans are so passionate! \u{1F3EF}" },
+];
+
+const PACK_ITEMS = [
+  { id: "sandwich", emoji: "\u{1F96A}", name: "Sandwich", desc: "A hearty meal for the road" },
+  { id: "book", emoji: "\u{1F4D6}", name: "Novel", desc: "Good company for long flights" },
+  { id: "camera", emoji: "\u{1F4F8}", name: "Camera", desc: "Capture memories" },
+  { id: "scarf", emoji: "\u{1F9E3}", name: "Warm Scarf", desc: "For cold destinations" },
+  { id: "chocolate", emoji: "\u{1F36B}", name: "Chocolate", desc: "Yes he CAN eat it, he's half human" },
+  { id: "glasses", emoji: "\u{1F453}", name: "Spare Glasses", desc: "A backup pair, just in case" },
+  { id: "umbrella", emoji: "\u{1F302}", name: "Umbrella", desc: "For rainy adventures" },
+  { id: "map", emoji: "\u{1F5FA}\uFE0F", name: "World Map", desc: "32 destinations to explore" },
+];
+
+const SOUVENIRS = ["\u{1F9F8}","\u{1F3AD}","\u{1FA86}","\u{1F38B}","\u{1F3FA}","\u{1FAAD}","\u{1F3AA}","\u{1F9E7}","\u{1FAA9}","\u{1F3A8}","\u{1F3B5}","\u{1F33A}","\u{1F41A}","\u{1FAB8}","\u{1F9AA}","\u{1F38D}"];
+
+function WolfTraveler() {
+  const [screen, setScreen] = useState("home");
+  const [wolfState, setWolfState] = useState("home");
+  const [packedItems, setPackedItems] = useState([]);
+  const [postcards, setPostcards] = useState([]);
+  const [souvenirs, setSouvenirs] = useState([]);
+  const [currentTrip, setCurrentTrip] = useState(null);
+  const [tripProgress, setTripProgress] = useState(0);
+  const [visitedCountries, setVisitedCountries] = useState([]);
+  const [newPostcard, setNewPostcard] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  const startTrip = useCallback(function() {
+    var unvisited = COUNTRIES.filter(function(c) { return !visitedCountries.includes(c.name); });
+    var pool = unvisited.length > 0 ? unvisited : COUNTRIES;
+    var destination = pool[Math.floor(Math.random() * pool.length)];
+    setCurrentTrip(destination);
+    setWolfState("traveling");
+    setTripProgress(0);
+  }, [visitedCountries]);
+
+  useEffect(function() {
+    if (wolfState !== "traveling") return;
+    var interval = setInterval(function() {
+      setTripProgress(function(prev) {
+        if (prev >= 100) {
+          clearInterval(interval);
+          var souvenir = SOUVENIRS[Math.floor(Math.random() * SOUVENIRS.length)];
+          var card = { country: currentTrip, items: packedItems.slice(), souvenir: souvenir, id: Date.now() };
+          setNewPostcard(card);
+          setPostcards(function(p) { return [card].concat(p); });
+          setSouvenirs(function(p) { return p.concat([souvenir]); });
+          if (!visitedCountries.includes(currentTrip.name)) {
+            setVisitedCountries(function(p) { return p.concat([currentTrip.name]); });
+          }
+          setWolfState("returned");
+          setPackedItems([]);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 300);
+    return function() { clearInterval(interval); };
+  }, [wolfState, currentTrip, packedItems, visitedCountries]);
+
+  function togglePackItem(item) {
+    if (wolfState !== "home") return;
+    setPackedItems(function(prev) {
+      if (prev.find(function(i) { return i.id === item.id; })) {
+        return prev.filter(function(i) { return i.id !== item.id; });
+      }
+      return prev.length < 4 ? prev.concat([item]) : prev;
+    });
+  }
+
+  if (showWelcome) {
+    return e("div", { style: { minHeight: "100vh", background: "linear-gradient(180deg, #0f1729 0%, #1a2744 40%, #2d4a3e 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" } },
+      e("div", { style: { textAlign: "center", color: "#f5f0e8", maxWidth: 420 } },
+        e("div", { style: { fontSize: 80, marginBottom: 8 } }, "\u{1F43A}\u{1F319}"),
+        e("h1", { style: { fontSize: 28, fontWeight: 700, margin: "0 0 8px 0", background: "linear-gradient(135deg, #e2b44a, #f0d68a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "0.5px" } }, "Wolf Traveler"),
+        e("p", { style: { fontSize: 13, color: "#8899bb", margin: "0 0 24px 0", fontStyle: "italic" } }, "A fan game inspired by a wolf who united 32 destinations"),
+        e("div", { style: { background: "rgba(255,255,255,0.06)", borderRadius: 16, padding: "20px 24px", marginBottom: 24, textAlign: "left", fontSize: 14, lineHeight: 1.7, color: "#c8d4e8", border: "1px solid rgba(255,255,255,0.08)" } },
+          e("p", { style: { margin: "0 0 12px 0" } }, "A little wolf boy wants to explore the world. Pack his bag, send him off, and he'll send postcards from his adventures!"),
+          e("p", { style: { margin: 0, fontSize: 12, color: "#8899bb" } }, "\u2728 Pack items for his journey\n\u{1F5FA}\uFE0F He visits 32 destinations\n\u{1F48C} Collect postcards & souvenirs\n\u{1F36B} Yes, he can eat chocolate")
+        ),
+        e("button", { onClick: function() { setShowWelcome(false); }, style: { background: "linear-gradient(135deg, #e2b44a, #c49a2e)", color: "#1a1a2e", border: "none", borderRadius: 24, padding: "14px 48px", fontSize: 16, fontWeight: 700, cursor: "pointer", letterSpacing: "0.5px", boxShadow: "0 4px 20px rgba(226,180,74,0.3)" } }, "Begin Journey \u{1F43E}"),
+        e("p", { style: { fontSize: 10, color: "#556677", marginTop: 20, lineHeight: 1.5 } }, "Non-commercial fan project. Not affiliated with Papergames/Infold.", e("br"), "Made with \u{1F49B} by a hunter who believes.")
+      )
+    );
+  }
+
+  var mainContent = [];
+
+  // Header
+  mainContent.push(e("div", { key: "header", style: { padding: "16px 20px 12px", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.06)" } },
+    e("div", { style: { fontSize: 14, fontWeight: 700, background: "linear-gradient(135deg, #e2b44a, #f0d68a)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 1 } }, "\u{1F43A} WOLF TRAVELER"),
+    e("div", { style: { fontSize: 11, color: "#667799", marginTop: 2 } }, visitedCountries.length + "/" + COUNTRIES.length + " destinations visited")
+  ));
+
+  // Wolf Scene
+  var sceneContent = [];
+  if (wolfState === "home") {
+    sceneContent.push(e("div", { key: "wolf", style: { fontSize: 64, marginBottom: 8 } }, "\u{1F43A}"));
+    sceneContent.push(e("div", { key: "status", style: { fontSize: 20, marginBottom: 4, color: "#e2b44a", fontWeight: 600 } }, "Valko is home"));
+    sceneContent.push(e("div", { key: "desc", style: { fontSize: 13, color: "#8899bb" } }, packedItems.length === 0 ? "Pack some items and send Valko on a trip!" : "Bag packed with " + packedItems.length + " item" + (packedItems.length > 1 ? "s" : "") + ". Ready to go!"));
+  } else if (wolfState === "traveling" && currentTrip) {
+    sceneContent.push(e("div", { key: "fly", style: { fontSize: 48, marginBottom: 8 } }, "\u{1F43A}\u2708\uFE0F \u2192 " + currentTrip.flag));
+    sceneContent.push(e("div", { key: "dest", style: { fontSize: 18, color: "#e2b44a", fontWeight: 600, marginBottom: 8 } }, "Valko is visiting " + currentTrip.name + "..."));
+    sceneContent.push(e("div", { key: "bar", style: { width: "80%", maxWidth: 280, height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden", marginBottom: 4 } },
+      e("div", { style: { width: tripProgress + "%", height: "100%", background: "linear-gradient(90deg, #e2b44a, #f0d68a)", borderRadius: 4, transition: "width 0.3s ease" } })
+    ));
+    var progressText = tripProgress < 30 ? "\u{1F6EB} Taking off..." : tripProgress < 60 ? "\u2601\uFE0F Flying over the clouds..." : tripProgress < 90 ? "\u{1F30D} Almost there..." : "\u{1F6EC} Landing!";
+    sceneContent.push(e("div", { key: "prog", style: { fontSize: 11, color: "#667799" } }, progressText));
+  } else if (wolfState === "returned" && newPostcard) {
+    sceneContent.push(e("div", { key: "back", style: { fontSize: 48, marginBottom: 8 } }, "\u{1F43A}\u{1F392}"));
+    sceneContent.push(e("div", { key: "title", style: { fontSize: 18, color: "#e2b44a", fontWeight: 600, marginBottom: 4 } }, "Valko is back!"));
+    sceneContent.push(e("div", { key: "sub", style: { fontSize: 13, color: "#8899bb", marginBottom: 16 } }, "He brought a postcard from " + newPostcard.country.name + "!"));
+    // Postcard
+    var cardItems = [];
+    cardItems.push(e("div", { key: "stamp", style: { position: "absolute", top: 12, right: 16, fontSize: 11, color: "#999", background: "#fff", padding: "2px 8px", borderRadius: 4, border: "1px dashed #ccc" } }, "\u{1F4EE} POSTCARD"));
+    cardItems.push(e("div", { key: "flags", style: { fontSize: 28, marginBottom: 8 } }, newPostcard.country.flag + " " + newPostcard.souvenir));
+    cardItems.push(e("div", { key: "greet", style: { fontSize: 15, fontWeight: 700, color: "#2a2a3a", marginBottom: 4 } }, "Greetings from " + newPostcard.country.name + "!"));
+    cardItems.push(e("div", { key: "msg", style: { fontSize: 12, color: "#666", marginBottom: 12, lineHeight: 1.6, fontStyle: "italic" } }, '"' + newPostcard.country.postcard + '"'));
+    cardItems.push(e("div", { key: "info", style: { fontSize: 11, color: "#999", borderTop: "1px dashed #ddd", paddingTop: 8 } }, "\u{1F37D}\uFE0F Tried: " + newPostcard.country.food + " \u2022 \u{1F3DB}\uFE0F Visited: " + newPostcard.country.landmark));
+    if (newPostcard.items.length > 0) {
+      cardItems.push(e("div", { key: "items", style: { fontSize: 11, color: "#999", marginTop: 4 } }, "\u{1F392} Brought: " + newPostcard.items.map(function(i) { return i.emoji; }).join(" ")));
+    }
+    sceneContent.push(e("div", { key: "card", style: { background: "#f5f0e8", borderRadius: 12, padding: 20, maxWidth: 320, width: "100%", color: "#2a2a3a", textAlign: "left", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", position: "relative", border: "2px solid #e2b44a" } }, cardItems));
+    sceneContent.push(e("button", { key: "btn", onClick: function() { setWolfState("home"); setNewPostcard(null); }, style: { marginTop: 16, background: "linear-gradient(135deg, #e2b44a, #c49a2e)", color: "#1a1a2e", border: "none", borderRadius: 20, padding: "10px 32px", fontSize: 14, fontWeight: 700 } }, "Welcome Home! \u{1F3E0}"));
+  }
+  mainContent.push(e("div", { key: "scene", style: { padding: "24px 20px", textAlign: "center", position: "relative", minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" } }, sceneContent));
+
+  // Pack Items
+  if (wolfState === "home" && screen === "home") {
+    var packItems = [];
+    packItems.push(e("div", { key: "label", style: { fontSize: 13, fontWeight: 700, color: "#e2b44a", marginBottom: 10, letterSpacing: 0.5 } }, "\u{1F392} PACK HIS BAG (max 4)"));
+    var itemButtons = PACK_ITEMS.map(function(item) {
+      var isPacked = packedItems.find(function(i) { return i.id === item.id; });
+      return e("button", { key: item.id, onClick: function() { togglePackItem(item); }, style: { background: isPacked ? "rgba(226,180,74,0.15)" : "rgba(255,255,255,0.04)", border: isPacked ? "1.5px solid rgba(226,180,74,0.5)" : "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 12, cursor: "pointer", textAlign: "left", transition: "all 0.2s" } },
+        e("div", { style: { fontSize: 24, marginBottom: 4 } }, item.emoji),
+        e("div", { style: { fontSize: 12, fontWeight: 600, color: isPacked ? "#e2b44a" : "#c8d4e8" } }, item.name + (isPacked ? " \u2713" : "")),
+        e("div", { style: { fontSize: 10, color: "#667799", marginTop: 2 } }, item.desc)
+      );
+    });
+    packItems.push(e("div", { key: "grid", style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 } }, itemButtons));
+    packItems.push(e("button", { key: "go", onClick: startTrip, style: { width: "100%", marginTop: 16, background: "linear-gradient(135deg, #4a6741, #5a7d4f)", color: "#f5f0e8", border: "none", borderRadius: 20, padding: 14, fontSize: 15, fontWeight: 700, letterSpacing: 0.5, boxShadow: "0 4px 16px rgba(74,103,65,0.3)" } }, "Send Valko on a Trip! \u{1F30D}"));
+    mainContent.push(e("div", { key: "pack", style: { padding: "0 20px 16px" } }, packItems));
+  }
+
+  // Postcards
+  if (screen === "postcards") {
+    var pcContent = [];
+    pcContent.push(e("div", { key: "label", style: { fontSize: 13, fontWeight: 700, color: "#e2b44a", marginBottom: 12, letterSpacing: 0.5 } }, "\u{1F48C} POSTCARDS (" + postcards.length + ")"));
+    if (postcards.length === 0) {
+      pcContent.push(e("div", { key: "empty", style: { textAlign: "center", padding: 40, color: "#667799", fontSize: 13 } }, "No postcards yet! Send Valko on a trip first \u{1F43A}"));
+    } else {
+      pcContent.push(e("div", { key: "list", style: { display: "flex", flexDirection: "column", gap: 10 } }, postcards.map(function(card) {
+        return e("div", { key: card.id, style: { background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "14px 16px", border: "1px solid rgba(255,255,255,0.08)" } },
+          e("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 6 } },
+            e("span", { style: { fontSize: 24 } }, card.country.flag),
+            e("div", null,
+              e("div", { style: { fontSize: 14, fontWeight: 600, color: "#e2b44a" } }, card.country.name),
+              e("div", { style: { fontSize: 11, color: "#667799" } }, "\u{1F37D}\uFE0F " + card.country.food + " \u2022 \u{1F3DB}\uFE0F " + card.country.landmark)
+            ),
+            e("span", { style: { fontSize: 20, marginLeft: "auto" } }, card.souvenir)
+          ),
+          e("div", { style: { fontSize: 12, color: "#a8b8d0", fontStyle: "italic", lineHeight: 1.5 } }, '"' + card.country.postcard + '"')
+        );
+      })));
+    }
+    mainContent.push(e("div", { key: "postcards", style: { padding: "0 20px" } }, pcContent));
+  }
+
+  // Map
+  if (screen === "map") {
+    var mapContent = [];
+    mapContent.push(e("div", { key: "label", style: { fontSize: 13, fontWeight: 700, color: "#e2b44a", marginBottom: 12, letterSpacing: 0.5 } }, "\u{1F5FA}\uFE0F WORLD MAP (" + visitedCountries.length + "/" + COUNTRIES.length + " destinations)"));
+    mapContent.push(e("div", { key: "grid", style: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 } }, COUNTRIES.map(function(country) {
+      var visited = visitedCountries.includes(country.name);
+      return e("div", { key: country.name, style: { textAlign: "center", padding: "10px 4px", background: visited ? "rgba(226,180,74,0.12)" : "rgba(255,255,255,0.03)", borderRadius: 10, border: visited ? "1px solid rgba(226,180,74,0.3)" : "1px solid rgba(255,255,255,0.05)", opacity: visited ? 1 : 0.5 } },
+        e("div", { style: { fontSize: 22 } }, country.flag),
+        e("div", { style: { fontSize: 9, color: visited ? "#e2b44a" : "#556677", fontWeight: visited ? 600 : 400, marginTop: 2, lineHeight: 1.2 } }, country.name),
+        visited ? e("div", { style: { fontSize: 8, color: "#667799" } }, "\u2713") : null
+      );
+    })));
+    mainContent.push(e("div", { key: "map", style: { padding: "0 20px" } }, mapContent));
+  }
+
+  // Souvenirs
+  if (screen === "souvenirs") {
+    var sovContent = [];
+    sovContent.push(e("div", { key: "label", style: { fontSize: 13, fontWeight: 700, color: "#e2b44a", marginBottom: 12, letterSpacing: 0.5 } }, "\u{1F381} SOUVENIRS (" + souvenirs.length + ")"));
+    if (souvenirs.length === 0) {
+      sovContent.push(e("div", { key: "empty", style: { textAlign: "center", padding: 40, color: "#667799", fontSize: 13 } }, "No souvenirs yet! Valko brings one from each trip \u{1F43A}"));
+    } else {
+      sovContent.push(e("div", { key: "grid", style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 } }, souvenirs.map(function(s, i) {
+        return e("div", { key: i, style: { textAlign: "center", padding: 12, background: "rgba(255,255,255,0.04)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", fontSize: 28 } }, s);
+      })));
+    }
+    mainContent.push(e("div", { key: "souvenirs", style: { padding: "0 20px" } }, sovContent));
+  }
+
+  // Bottom Nav
+  var tabs = [
+    { id: "home", emoji: "\u{1F3E0}", label: "Home" },
+    { id: "postcards", emoji: "\u{1F48C}", label: "Postcards" },
+    { id: "map", emoji: "\u{1F5FA}\uFE0F", label: "Map" },
+    { id: "souvenirs", emoji: "\u{1F381}", label: "Souvenirs" }
+  ];
+  mainContent.push(e("div", { key: "nav", style: { position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(15,23,41,0.95)", backdropFilter: "blur(10px)", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-around", padding: "8px 0 12px" } },
+    tabs.map(function(tab) {
+      return e("button", { key: tab.id, onClick: function() { setScreen(tab.id); }, style: { background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "4px 12px", opacity: screen === tab.id ? 1 : 0.5, transition: "opacity 0.2s" } },
+        e("span", { style: { fontSize: 20 } }, tab.emoji),
+        e("span", { style: { fontSize: 10, color: screen === tab.id ? "#e2b44a" : "#667799", fontWeight: screen === tab.id ? 600 : 400 } }, tab.label)
+      );
+    })
+  ));
+
+  return e("div", { style: { minHeight: "100vh", background: "linear-gradient(180deg, #0f1729 0%, #1a2744 40%, #2d4a3e 100%)", fontFamily: "'Segoe UI', system-ui, sans-serif", color: "#f5f0e8", paddingBottom: 80 } }, mainContent);
+}
+
+ReactDOM.render(e(WolfTraveler), document.getElementById("root"));
+</script>
+</body>
+</html>
